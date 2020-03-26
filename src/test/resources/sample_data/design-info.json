@@ -1,0 +1,13 @@
+{
+  "sampleData": {
+    "55b13b37-b365-47b8-9d2e-3982f304e1a3": {
+      "payload": "sample_data/list_json.json",
+      "vars-MsgId": "sample_data/unknown.dwl"
+    },
+    "c5563366-0645-4e45-9d8e-0b02e7cc0aca": {
+      "payload": "sample_data/list_json_1.json",
+      "vars-attachmentId": "sample_data/unknown_1.dwl",
+      "vars-MsgId": "sample_data/unknown_2.dwl"
+    }
+  }
+}

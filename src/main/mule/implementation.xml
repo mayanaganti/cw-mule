@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:tls="http://www.mulesoft.org/schema/mule/tls"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:email="http://www.mulesoft.org/schema/mule/email"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd 
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<configuration-properties doc:name="Configuration properties" doc:id="2653453c-ec76-44de-a757-91b7b2b863e2" file="emailconfig.properties" />
+	<email:imap-config name="Email_IMAP" doc:name="Email IMAP" doc:id="184e6479-aa45-4a3c-a2c2-d2891e0d5f7d" >
+		<email:imaps-connection host="imap.googlemail.com" user="cloudwave12@gmail.com" password="Cl1oudwav312" >
+			<tls:context >
+				<tls:trust-store insecure="true" />
+			</tls:context>
+		</email:imaps-connection>
+	</email:imap-config>
+	<flow name="readMessages" doc:id="8726e89b-4302-4e69-a7a1-a10f9ac79892" >
+		<logger level="INFO" doc:name="Logger" doc:id="03447e23-d213-4bdf-a7fa-3283281c52ff" message="startFlow" />
+		<logger level="INFO" doc:name="Logger" doc:id="b8b97463-8ce0-41cd-8183-6419cba2a5e0" message="#[attributes.queryParams]"/>
+		<ee:transform doc:name="Transform Message" doc:id="88ffa9fc-0545-4bca-83db-1e1d55388ed6" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="receivedSince" ><![CDATA[      %dw 2.0
+output application/java
+---
+((attributes.queryParams['fields'] as String {format: "yyyy-MM-dd'T'HH:mm:ss"}) as LocalDateTime {format: "yyyy-MM-dd'T'HH:mm:ss"}) default null]]></ee:set-variable>
+				<ee:set-variable variableName="receivedUntil" ><![CDATA[      %dw 2.0
+output application/java
+---
+((attributes.queryParams['filters'] as String {format: "yyyy-MM-dd'T'HH:mm:ss"}) as LocalDateTime {format: "yyyy-MM-dd'T'HH:mm:ss"}) default null
+
+]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="50921dec-9513-4757-b955-b0475a655fc5" message="#[vars.receivedSince], #[ vars.receivedUntil]"/>
+		<email:list-imap doc:name="List - IMAP" doc:id="eaaea06e-e861-443a-a177-7ea3ed5f1cc5" config-ref="Email_IMAP">
+			<email:imap-matcher subjectRegex="${email.subject}" receivedSince="#[vars.receivedSince]" receivedUntil="#[vars.receivedUntil]"/>
+		</email:list-imap>
+		<ee:transform doc:name="Transform Message" doc:id="76519c83-3868-4cc7-b672-6241ff2e9982" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="subject" ><![CDATA[%dw 2.0
+output application/json
+---
+attributes.subject
+
+
+]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="591d20a7-c8c2-424f-b02e-04dd50baf4a7" message="#[payload] , #[vars.MsgId], PayloadMsgId: #[payload.attributes.id]]"/>
+		<ee:transform doc:name="/messages" doc:id="0e608a10-7fdf-49f6-a073-01919e2b5947" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+
+payload map ( payload01 , indexOfPayload01 ) -> {
+	emails: {
+		messageId1: payload01.attributes.id,
+				
+		messageId2: payload01.attributes.headers[7],
+				
+		from: payload01.attributes.fromAddresses[0],
+		to: payload01.attributes.toAddresses[0],
+		cc: payload01.attributes.ccAddresses[0],
+		bccAddresses: payload01.attributes.bccAddresses[0],
+		replyToAddresses: payload01.attributes.replyToAddresses[0],
+		subject: payload01.attributes.subject,
+		date: payload01.attributes.receivedDate,
+		body: payload01.payload.body
+}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<sub-flow name="List-IMAP" doc:id="d36fbab7-ba5b-4378-abde-5c4647203d83" >
+		<logger level="INFO" doc:name="Logger" doc:id="11b7ac92-3967-4a83-ae3b-0e5c41656eea" message="startFlow" />
+		<set-variable value="#[&quot;&lt;&quot;++ attributes.uriParams['Id'] ++&quot;@mail.gmail.com&gt;&quot;]" doc:name="MsgId" doc:id="95fa259f-82c9-4499-8652-a4dd934eba5c" variableName="MsgId" />
+		<set-variable value="#[attributes.uriParams['attachmentId']]" doc:name="AttachmentId" doc:id="515a1887-5c67-4fb3-9cb0-35cac8984207" variableName="attachmentId" />
+		<ee:transform doc:name="Transform Message" doc:id="3fbb41c1-eafa-4893-9d7d-a61e02039ac6">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="receivedSince"><![CDATA[      %dw 2.0
+output application/java
+---
+((attributes.queryParams['fields'] as String {format: "yyyy-MM-dd'T'HH:mm:ss"}) as LocalDateTime {format: "yyyy-MM-dd'T'HH:mm:ss"}) default null]]></ee:set-variable>
+				<ee:set-variable variableName="receivedUntil"><![CDATA[      %dw 2.0
+output application/java
+---
+((attributes.queryParams['filters'] as String {format: "yyyy-MM-dd'T'HH:mm:ss"}) as LocalDateTime {format: "yyyy-MM-dd'T'HH:mm:ss"}) default null
+
+]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="MsgId" doc:id="076ee48d-1c64-4c1a-85ca-9d83708c44f8" message="#[vars.MsgId]" />
+		<email:list-imap doc:name="List - IMAP" doc:id="ad8e806f-38de-4a6a-946c-6b7f19b0420c" config-ref="Email_IMAP" >
+			<email:imap-matcher subjectRegex="${email.subject}" receivedSince="#[vars.receivedSince]" receivedUntil="#[vars.receivedUntil]"/>
+		</email:list-imap>
+	</sub-flow>
+	<sub-flow name="readMessageId" doc:id="f5923048-9aaf-469d-ad0d-972bce72e83a" >
+		<flow-ref doc:name="List-IMAP" doc:id="219a6d83-94e1-4b30-854e-329bdd8a4f43" name="List-IMAP"/>
+		<logger level="INFO" doc:name="Logger" doc:id="7aa67066-505d-4f34-8241-40e5b42dc8ed" message="#[payload]"/>
+		<ee:transform doc:name="Transform Message JSON" doc:id="34271111-b7d0-445a-9b0c-6655142ddaef" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="859d75f1-119d-4577-8063-2ecc6d012732" message="#[payload] , #[vars.MsgId], PayloadMsgId: #[payload.attributes.id]]" />
+		<ee:transform doc:name="Transform Message Filter" doc:id="e8c20a35-0697-4d98-b2e4-2cd365829168" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload filter ($.attributes.headers[7] == vars.MsgId ) 
+map ( payload01 , indexOfPayload01 ) -> {
+	emails: {
+		messageId1: payload01.attributes.id,
+				
+		messageId2: payload01.attributes.headers[7],
+				
+		from: payload01.attributes.fromAddresses[0],
+		to: payload01.attributes.toAddresses[0],
+		cc: payload01.attributes.ccAddresses[0],
+		bccAddresses: payload01.attributes.bccAddresses[0],
+		replyToAddresses: payload01.attributes.replyToAddresses[0],
+		subject: payload01.attributes.subject,
+		date: payload01.attributes.receivedDate,
+		body: payload01.payload.body
+        
+}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+	<sub-flow name="readMessageIdAttachments" doc:id="17d9c7c3-749f-404b-aca2-26f343956856" >
+		<flow-ref doc:name="List-IMAP" doc:id="23d80908-e47a-4985-b475-7f8b71902f09" name="List-IMAP"/>
+		<ee:transform doc:name="Transform Message" doc:id="215f92ee-19be-436b-8f9f-0dac28ff923e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Print-Logger" doc:id="7637d208-4117-461a-acf1-e8dada4b22cd" message="#[vars.MsgId], messageId2: #[payload[0].attributes.headers[7]]" />
+		<ee:transform doc:name="Transform Message" doc:id="ec8a0b55-806c-442c-8180-8c28d03d657e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Transform MessageId Attchments" doc:id="55b13b37-b365-47b8-9d2e-3982f304e1a3" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload filter ($.attributes.headers[7] == vars.MsgId )
+
+map ( payload01 , indexOfPayload01 ) -> {
+	emails: {
+		messageId1: payload01.attributes.id,
+				
+		messageId2: payload01.attributes.headers[7],
+				
+		from: payload01.attributes.fromAddresses[0],
+		to: payload01.attributes.toAddresses[0],
+		cc: payload01.attributes.ccAddresses[0],
+		bccAddresses: payload01.attributes.bccAddresses[0],
+		replyToAddresses: payload01.attributes.replyToAddresses[0],
+		subject: payload01.attributes.subject,
+		date: payload01.attributes.receivedDate,
+		body: payload01.payload.body,
+        attachments: payload01.payload.attachments filterObject ((value, key) -> key contains ".csv")
+		
+}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+	<sub-flow name="readMessageIdAttachmentsId" doc:id="9358e4ee-0088-47c9-8651-f724a8b41446" >
+		<flow-ref doc:name="List-IMAP" doc:id="b7861c24-df29-427b-a19f-d8ea9d2719a4" name="List-IMAP"/>
+		<ee:transform doc:name="Json Transform Message" doc:id="d8001394-913b-49cb-ae1b-d5bfb15d9c68" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Print-Logger" doc:id="e7ce0183-64a0-43f1-9032-20425978cfda" message="#[vars.MsgId], messageId2: #[payload[0].attributes.headers[7]]" />
+		<ee:transform doc:name="Transform Message" doc:id="c155eae3-de9b-49db-b70b-98320a088a85" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="MessageId AttchmentsId" doc:id="c5563366-0645-4e45-9d8e-0b02e7cc0aca" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload filter ($.attributes.headers[7] == vars.MsgId )
+map ( payload01 , indexOfPayload01 ) -> {
+	emails: {
+		messageId1: payload01.attributes.id,
+				
+		messageId2: payload01.attributes.headers[7],
+				
+		from: payload01.attributes.fromAddresses[0],
+		to: payload01.attributes.toAddresses[0],
+		cc: payload01.attributes.ccAddresses[0],
+		bccAddresses: payload01.attributes.bccAddresses[0],
+		replyToAddresses: payload01.attributes.replyToAddresses[0],
+		subject: payload01.attributes.subject,
+		date: payload01.attributes.receivedDate,
+		body: payload01.payload.body,
+        attachments: payload01.payload.attachments filterObject ((value, key) -> key contains vars.attachmentId),
+        attachments: payload01.payload.attachments filterObject ((value, key) -> key contains ".csv")
+		
+}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+</mule>

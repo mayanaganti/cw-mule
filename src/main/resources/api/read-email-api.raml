@@ -1,0 +1,152 @@
+#%RAML 1.0
+---
+title: Read email API
+
+version: v1
+traits:
+  searchable:
+    queryParameters:
+      fileds:
+        displayName: fileds
+        type: string
+        description: fileds to include in the output
+        example: fileds=field1,field2,filed3
+        required: false
+      filters:
+        displayName: filters
+        type: string
+        description: filters the output
+        example: filters=field[condition]value and/or field1[condition]value1
+        required: false  
+    
+
+/messages:
+  displayName: /messages
+  description: Gets list of email messages
+  
+  get:
+    is: [searchable]
+            
+    description: Gets list of email messages
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include examples/emailMessages.json
+      404:
+        body:
+          application/json:
+            example: |
+              {"message": "Resource not found","success":"false","status":404}
+      400:
+        body:
+          application/json:
+            example: |
+              {"message": "Bad Request","success":"false","status":400}
+      405:
+        body:
+          application/json:
+            example: |
+                {"message": "Method Not Allowed","success":"false","status":405}
+      401:
+        body:
+          application/json:
+            example: |
+              {"message": "Unauthorized","success":"false","status":401}
+       
+  /{Id}:
+    displayName: /{Id}
+    get:
+      is: [searchable]
+           
+      description: Gets a email message based on a email message Id
+             
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include examples/emailMessages.json
+        404:
+          body:
+            application/json:
+              example: |
+                {"message": "Resource not found","success":"false","status":404}
+        400:
+          body:
+            application/json:
+              example: |
+                {"message": "Bad Request","success":"false","status":400}
+        405:
+          body:
+            application/json:
+              example: |
+                  {"message": "Method Not Allowed","success":"false","status":405}      
+        401:
+          body:
+            application/json:
+              example: |
+                {"message": "Unauthorized","success":"false","status":401}  
+    /attachements:
+      displayName: /attachements
+      get:
+        is: [searchable]
+            
+        description: Get attachments of a email message
+        responses:
+          200:
+            body:
+              application/json:
+                example: !include examples/attachment.json
+          404:
+            body:
+              application/json:
+                example: |
+                  {"message": "Resource not found","success":"false","status":404}
+          400:
+            body:
+              application/json:
+                example: |
+                  {"message": "Bad Request","success":"false","status":400}
+          405:
+            body:
+              application/json:
+                example: |
+                    {"message": "Method Not Allowed","success":"false","status":405}      
+          401:
+            body:
+              application/json:
+                example: |
+                  {"message": "Unauthorized","success":"false","status":401}
+      /{attachmentId}:
+        displayName: /{attachmentId}
+        get:
+          is: [searchable]
+                                 
+              
+          description: Gets a particular attachment message
+                
+          responses:
+            200:
+              body:
+                application/json:
+                  example: !include examples/attachment.json
+            404:
+              body:
+                application/json:
+                  example: |
+                    {"message": "Resource not found","success":"false","status":404}
+            400:
+              body:
+                application/json:
+                  example: |
+                    {"message": "Bad Request","success":"false","status":400}
+            405:
+              body:
+                application/json:
+                  example: |
+                      {"message": "Method Not Allowed","success":"false","status":405}      
+            401:
+              body:
+                  application/json:
+                    example: |
+                      {"message": "Unauthorized","success":"false","status":401}

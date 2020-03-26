@@ -1,0 +1,23 @@
+{
+   "emails":[
+      {
+        "messageId":"",
+         "Subject":"actual subject of this messageId",
+         "from":"",
+         "to":"",
+         "cc":"",
+         "body":"",
+         "date":""
+      },
+      {
+         "messageId":"",
+
+         "Subject":"actual subject of this messageId",
+         "from":"",
+         "to":"",
+         "cc":"",
+         "body":"",
+         "date":""
+      }
+   ]
+}

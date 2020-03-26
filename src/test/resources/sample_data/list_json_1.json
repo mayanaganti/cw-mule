@@ -1,0 +1,41 @@
+[
+  {
+    "payload": {
+      "body": "????",
+      "attachments": {
+        "contacts1.csv": "firstname,surname,phone,email\r\nJohn,Doe1,96548763,john.doe@texasComp.com\r\n",
+        "contacts3.csv": "firstname,surname,phone,email\r\nJohn,Doe3,96548763,john.doe@texasComp.com\r\nJane,Doe3,91558780,jane.doe@texasComp.com\r\nDavid,Boe3,91558781,david.boe@texasComp.com\r\n",
+        "contacts4.csv": "firstname,surname,phone,email\r\nJohn,Doe4,96548763,john.doe@texasComp.com\r\nJane,Doe4,91558780,jane.doe@texasComp.com\r\nDavid,Boe4,91558781,david.boe@texasComp.com\r\nMike,Coe4,91558782,mike.coe@texasComp.com\r\n",
+        "contacts2.csv": "firstname,surname,phone,email\r\nJohn,Doe2,96548763,john.doe@texasComp.com\r\nJane,Doe2,91558780,jane.doe@texasComp.com\r\n"
+      }
+    },
+    "attributes": {
+      "flags": {
+        
+      },
+      "id": "????",
+      "number": 2,
+      "fromAddresses": [
+        "????"
+      ],
+      "toAddresses": [
+        "????"
+      ],
+      "ccAddresses": [
+        "????"
+      ],
+      "bccAddresses": [
+        "????"
+      ],
+      "replyToAddresses": [
+        "????"
+      ],
+      "headers": {
+        
+      },
+      "subject": "????",
+      "receivedDate": "2003-10-01T23:57:59Z",
+      "sentDate": "2003-10-01T23:57:59Z"
+    }
+  }
+]
